@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tr. Winnie's 單字狼人殺系統 V2</title>
+    <style>
+        :root {
+            --bg-dark: #0f111a;
+            --panel-bg: #1a1c28;
+            --accent-red: #e94560;
+            --accent-green: #2ecc71;
+            --gold: #f1c40f;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            box-sizing: border-box;
+            gap: 15px;
+        }
+
+        /* 雙介面佈局 */
+        .phone-side {
+            flex: 1;
+            background-color: var(--panel-bg);
+            border-radius: 12px;
+            padding: 15px;
+            border: 2px solid #2a2d3d;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen-side {
+            flex: 1;
+            background-color: #0b0c10;
+            border-radius: 12px;
+            padding: 15px;
+            border: 2px solid var(--gold);
+            overflow-y: auto;
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.2);
+        }
+
+        h2, h3 { margin-top: 0; color: var(--gold); text-align: center; }
+        .subtitle { font-size: 12px; color: #888; text-align: center; margin-top: -10px; margin-bottom: 15px; }
+
+        /* 設定區樣式 */
+        textarea {
+            width: 100%; height: 60px; background: #222533; border: 1px solid #444;
+            color: white; padding: 8px; border-radius: 6px; box-sizing: border-box; resize: none;
+        }
+        .setup-row { display: flex; gap: 10px; margin: 10px 0; align-items: center; justify-content: space-between; }
+        input[type="number"] { width: 60px; background: #222533; border: 1px solid #444; color: white; padding: 5px; text-align: center; border-radius: 4px; }
+        
+        button {
+            background-color: var(--accent-red); color: white; border: none; padding: 10px;
+            border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+
+        /* 老師手機端玩家列表 */
+        .player-list-phone { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        .player-row-phone {
+            background: #222533; padding: 12px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+            border-left: 5px solid #444;
+        }
+        .player-row-phone.alive { border-left-color: var(--accent-green); }
+        .player-row-phone.dead { border-left-color: var(--accent-red); background: #1a1215; }
+        .status-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .status-alive { background: rgba(46, 204, 113, 0.2); color: var(--accent-green); }
+        .status-dead { background: rgba(233, 69, 96, 0.2); color: var(--accent-red); }
+
+        /* 隱密彈開面板 */
+        .modal {
+            position: fixed; top: 50%; left: 25%; transform: translate(-50%, -50%);
+            width: 45%; background: #2c3045; border: 3px solid var(--gold);
+            border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            box-sizing: border-box; z-index: 100;
+        }
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99; }
+        .hidden { display: none !important; }
+
+        /* 大螢幕端樣式 */
+        .screen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-top: 15px; }
+        .screen-card {
+            background: #1f212d; border: 1px solid #333; border-radius: 8px;
+            padding: 15px; text-align: center; position: relative;
+        }
+        .screen-card.dead { background: #2d181c; border-color: var(--accent-red); opacity: 0.6; }
+        .screen-card.dead::after {
+            content: "復活區"; position: absolute; bottom: 5px; right: 5px;
+            font-size: 10px; background: var(--accent-red); color: white; padding: 2px 4px; border-radius: 3px;
+        }
+        .p-num { font-size: 24px; font-weight: bold; color: var(--gold); margin-bottom: 5px; }
+        .p-name { font-size: 16px; font-weight: bold; }
+
+        /* 流程引導區 */
+        .flow-control { background: #15161e; padding: 12px; border-radius: 8px; border: 1px solid #444; margin-bottom: 15px; text-align: center; }
+        .flow-display { font-size: 28px; font-weight: bold; color: #54a0ff; margin: 10px 0; text-shadow: 0 0 8px rgba(84,160,255,0.4); }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 老師掌上控制端 (建議放左邊或手機操作) -->
+    <div class="phone-side">
+        <h2>📱 老師控制台</h2>
+        <div class="subtitle">（此區請留在自己手機/螢幕，勿給學生看）</div>
+        
+        <div id="setupArea">
+            <textarea id="namesInput" placeholder="輸入學生名字，可用逗號或換行隔開...&#10;例如：Tiffany, Andrea, Katrina, Kelly"></textarea>
+            <div class="setup-row">
+                <label>狼人總數：</label>
+                <input type="number" id="wolfNum" value="2" min="1">
+            </div>
+            <button onclick="startGame()">⚔️ 初始化並排定編號</button>
+        </div>
+
+        <div id="controlArea" class="hidden">
+            <div class="flow-control" style="background:#222533;">
+                <span style="font-size:12px; color:#aaa;">主宰端流程切換（點擊會同步大螢幕）</span>
+                <div style="display:flex; gap:5px; margin-top:5px;">
+                    <button style="background:#54a0ff; font-size:12px; padding:5px;" onclick="changeFlow('天亮了，開始單字小考與改卷！')">☀️ 天亮</button>
+                    <button style="background:#57606f; font-size:12px; padding:5px;" onclick="changeFlow('天黑請閉眼，身分發動技能中...')">🌙 天黑</button>
+                    <button style="background:#ff6b6b; font-size:12px; padding:5px;" onclick="changeFlow('投票時間！請指牌處決嫌疑人！')">🗳️ 投票</button>
+                </div>
+            </div>
+
+            <h4 style="margin:5px 0; color:#aaa;">點擊學生：改考卷/升級/處決/復活</h4>
+            <div id="playerListPhone" class="player-list-phone"></div>
+        </div>
+    </div>
+
+    <!-- 2. 教室大螢幕顯示端 (投影機畫面) -->
+    <div class="screen-side">
+        <h2>🐺 單字狼人殺 戰況看板 🐺</h2>
+        <div id="screenFlow" class="flow-display" style="text-align:center;">請等待老師初始化遊戲...</div>
+        
+        <div class="screen-grid" id="screenGrid">
+            <!-- 這裡只會顯示編號、名字、存活狀態 -->
+        </div>
+    </div>
+
+    <!-- 3. 老師改卷專用隱密彈窗 (確保台下看不到身分) -->
+    <div id="modalOverlay" class="modal-overlay hidden" onclick="closeModal()"></div>
+    <div id="secretModal" class="modal hidden">
+        <h3 id="modalTitle" style="color:var(--gold); margin-bottom:10px;">學生操作面版</h3>
+        <div style="background:#1a1c28; padding:15px; border-radius:8px; margin-bottom:15px; line-height: 1.6;">
+            <div>初始陣營：<span id="mInitial" style="font-weight:bold;"></span></div>
+            <div>目前身分：<span id="mCurrent" style="font-weight:bold; font-size:18px; color:#54a0ff;"></span></div>
+            <div id="mSkill" style="font-size:13px; color:#aaa; margin-top:5px;"></div>
+        </div>
+        
+        <!-- 動態按鈕區 -->
+        <div id="actionButtons" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <button style="background:#57606f; margin-top:10px;" onclick="closeModal()">關閉視窗</button>
+    </div>
+
+    <script>
+        let players = [];
+        let currentEditingIndex = null;
+
+        const godPool = ['預言家', '女巫', '平民'];
+        const alphaPool = ['白狼王', '狼美人', '狼人'];
+
+        function startGame() {
+            const rawNames = document.getElementById('namesInput').value;
+            const wolfCount = parseInt(document.getElementById('wolfNum').value);
+            const names = rawNames.split(/[\n,，]+/).map(n => n.trim()).filter(n => n !== "");
+
+            if(names.length < 4) { alert("人數太少囉！至少需要4人"); return; }
+            if(wolfCount >= names.length / 2) { alert("狼人太多了！"); return; }
+
+            // 初始化玩家 (陣營 0:平民, 1:狼人)
+            players = names.map((name, idx) => ({
+                id: idx + 1,
+                name: name,
+                initial: 0, 
+                currentRole: '平民',
+                isAlive: true,
+                isUpgraded: false
+            }));
+
+            // 隨機分配狼人
+            let assigned = 0;
+            while(assigned < wolfCount) {
+                let ran = Math.floor(Math.random() * players.length);
+                if(players[ran].initial === 0) {
+                    players[ran].initial = 1;
+                    players[ran].currentRole = '狼人';
+                    assigned++;
+                }
+            }
+
+            document.getElementById('setupArea').classList.add('hidden');
+            document.getElementById('controlArea').classList.remove('hidden');
+            
+            changeFlow('☀️ 天亮了！請進行第1輪單字小考 📝');
+            renderData();
+        }
+
+        function renderData() {
+            const phoneList = document.getElementById('playerListPhone');
+            const screenGrid = document.getElementById('screenGrid');
+            
+            phoneList.innerHTML = '';
+            screenGrid.innerHTML = '';
+
+            players.forEach((p, idx) => {
+                // 1. 渲染老師手機端
+                const row = document.createElement('div');
+                row.className = `player-row-phone ${p.isAlive ? 'alive' : 'dead'}`;
+                row.onclick = () => openModal(idx);
+                row.innerHTML = `
+                    <div><strong>${p.id}號. ${p.name}</strong> <span style="font-size:11px; color:#aaa;">(${p.currentRole})</span></div>
+                    <span class="status-badge ${p.isAlive ? 'status-alive' : 'status-dead'}">${p.isAlive ? '存活' : '出局'}</span>
+                `;
+                phoneList.appendChild(row);
+
+                // 2. 渲染大螢幕看板 (絕對不洩漏身分)
+                const card = document.createElement('div');
+                card.className = `screen-card ${p.isAlive ? '' : 'dead'}`;
+                card.innerHTML = `
+                    <div class="p-num">${p.id}號</div>
+                    <div class="p-name">${p.name}</div>
+                `;
+                screenGrid.appendChild(card);
+            });
+        }
+
+        function changeFlow(text) {
+            document.getElementById('screenFlow').innerText = text;
+        }
+
+        // 彈出秘密改卷視窗
+        function openModal(idx) {
+            currentEditingIndex = idx;
+            const p = players[idx];
+            
+            document.getElementById('modalTitle').innerText = `${p.id}號 【${p.name}】 的身分檔案`;
+            document.getElementById('mInitial').innerText = p.initial === 0 ? '平民陣營 🧑‍🌾' : '狼人陣營 🐺';
+            document.getElementById('mCurrent').innerText = p.currentRole;
+            
+            // 技能說明
+            let skill = '無特殊技能。';
+            if (p.currentRole === '預言家') skill = '🔮 每晚可查驗一人身分。';
+            else if (p.currentRole === '女巫') skill = '🧪 擁有一瓶毒藥與一瓶解藥。';
+            else if (p.currentRole === '白狼王') skill = '💥 白天發言時可隨時自爆，強行帶走一人。';
+            else if (p.currentRole === '狼美人') skill = '💋 每晚魅惑一人，自己死時該人一同殉情。';
+            document.getElementById('mSkill').innerText = skill;
+
+            // 動態產生控制按鈕
+            const btnArea = document.getElementById('actionButtons');
+            btnArea.innerHTML = '';
+
+            if (p.isAlive) {
+                // 活著的時候：可以單字全對升級
+                if (!p.isUpgraded) {
+                    const upBtn = document.createElement('button');
+                    upBtn.style.background = 'var(--gold)';
+                    upBtn.style.color = 'black';
+                    upBtn.innerText = '💯 單字全對 ➜ 抽卡升級！';
+                    upBtn.onclick = triggerUpgrade;
+                    btnArea.appendChild(upBtn);
+                } else {
+                    btnArea.innerHTML += `<div style="text-align:center; color:var(--gold); font-size:13px;">✨ 本局已是高級身分</div>`;
+                }
+
+                // 活著的時候：可以被處決出局
+                const killBtn = document.createElement('button');
+                killBtn.style.background = 'var(--accent-red)';
+                killBtn.innerText = '💀 宣布此人出局 (投死/毒死/殺死)';
+                killBtn.onclick = () => changeStatus(false);
+                btnArea.appendChild(killBtn);
+            } else {
+                // 死掉的時候（在復活區）：可以單字全對復活
+                const reviveBtn = document.createElement('button');
+                reviveBtn.style.background = 'var(--accent-green)';
+                reviveBtn.innerText = '❤️ 單字全對 ➜ 成功復活！(回復原始陣營)';
+                reviveBtn.onclick = triggerRevive;
+                btnArea.appendChild(reviveBtn);
+            }
+
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            document.getElementById('secretModal').classList.remove('hidden');
+        }
+
+        // 觸發升級 (活著全對)
+        function triggerUpgrade() {
+            const p = players[currentEditingIndex];
+            if (p.initial === 0) {
+                p.currentRole = godPool[Math.floor(Math.random() * godPool.length)];
+            } else {
+                p.currentRole = alphaPool[Math.floor(Math.random() * alphaPool.length)];
+            }
+            p.isUpgraded = true;
+            alert(`升級成功！${p.name} 的最終身分變為：【${p.currentRole}】\n請偷偷告知學生！`);
+            renderData();
+            closeModal();
+        }
+
+        // 觸發復活 (死掉全對)
+        function triggerRevive() {
+            const p = players[currentEditingIndex];
+            p.isAlive = true;
+            p.isUpgraded = false; // 復活沒有升級
+            p.currentRole = p.initial === 0 ? '平民' : '狼人'; // 回復原始身分
+            alert(`❤️ 復活成功！${p.name} 已重回陽間。\n目前身分已洗回最原始的：【${p.currentRole}】`);
+            renderData();
+            closeModal();
+        }
+
+        // 更改生死狀態
+        function changeStatus(alive) {
+            players[currentEditingIndex].isAlive = alive;
+            renderData();
+            closeModal();
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.add('hidden');
+            document.getElementById('secretModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
