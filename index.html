@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tr. Winnie's 單字狼人殺系統 V4 - 完美主持版</title>
+    <title>Tr. Winnie's 單字狼人殺系統 V4.1 - 防偷看完美主持版</title>
     <style>
         :root {
             --bg-dark: #0f111a;
@@ -69,15 +69,19 @@
         .status-alive { background: rgba(46, 204, 113, 0.2); color: var(--accent-green); }
         .status-dead { background: rgba(233, 69, 96, 0.2); color: var(--accent-red); }
 
-        /* 隱密彈開面板 */
+        /* ================= 🛑 關鍵修正：防偷看隱密彈開面板 🛑 ================= */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #0f111a; /* 1. 改為完全不透明的底色，直接遮死後面所有名單 */
+            z-index: 99; 
+        }
         .modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 400px; background: #2c3045; border: 3px solid var(--gold);
-            border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            width: 95%; max-width: 440px; background: #1a1c28; border: 3px solid var(--gold);
+            border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             box-sizing: border-box; z-index: 100;
         }
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99; }
-        .hidden { display: none !important; }
+        /* ================================================================= */
 
         /* 大螢幕端樣式 */
         .screen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; width: 100%; }
@@ -115,7 +119,7 @@
 </head>
 <body>
 
-    <h1 style="color:var(--gold); margin-bottom:5px;">🐺 Tr. Winnie's 單字狼人殺 V4 🐺</h1>
+    <h1 style="color:var(--gold); margin-bottom:5px;">🐺 Tr. Winnie's 單字狼人殺 V4.1 🐺</h1>
     
     <div class="mode-select" id="modeSelector">
         <button class="mode-btn" onclick="selectMode('phone')">📱 我是手機 (控制端)</button>
@@ -172,17 +176,17 @@
         </div>
     </div>
 
-    <!-- 老師改卷隱密彈窗 -->
+    <!-- 老師改卷隱密彈窗 (內建 100% 遮蔽底色) -->
     <div id="modalOverlay" class="modal-overlay hidden" onclick="closeModal()"></div>
     <div id="secretModal" class="modal hidden">
         <h3 id="modalTitle">學生檔案</h3>
-        <div style="background:#1a1c28; padding:15px; border-radius:8px; margin-bottom:15px; line-height: 1.6;">
+        <div style="background:#222533; padding:15px; border-radius:8px; margin-bottom:15px; line-height: 1.6;">
             <div>初始陣營：<span id="mInitial" style="font-weight:bold;"></span></div>
-            <div>目前身分：<span id="mCurrent" style="font-weight:bold; font-size:18px; color:#54a0ff;"></span></div>
-            <div id="mSkill" style="font-size:13px; color:#aaa; margin-top:5px;"></div>
+            <div>目前身分：<span id="mCurrent" style="font-weight:bold; font-size:22px; color:#54a0ff; display:block; margin-top:5px;"></span></div>
+            <div id="mSkill" style="font-size:14px; color:#aaa; margin-top:8px; border-top:1px dashed #444; padding-top:8px;"></div>
         </div>
         <div id="actionButtons" style="display:flex; flex-direction:column; gap:10px;"></div>
-        <button style="background:#57606f; margin-top:10px;" onclick="closeModal()">關閉視窗</button>
+        <button style="background:#57606f; margin-top:10px;" onclick="closeModal()">看完關閉檔案 (保護身分)</button>
     </div>
 
     <!-- 載入 Firebase 核心套件 -->
@@ -190,7 +194,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // 💡 這裡已經幫你換成你專屬的 Firebase 即時連線網址囉！
         const firebaseConfig = {
             databaseURL: "https://haowork-12-default-rtdb.firebaseio.com/"
         };
@@ -373,7 +376,7 @@
             currentEditingIndex = idx;
             const p = players[idx];
             
-            document.getElementById('modalTitle').innerText = `${p.id}號 【${p.name}】`;
+            document.getElementById('modalTitle').innerText = `${p.id}號 【${p.name}】 的身分檔案`;
             document.getElementById('mInitial').innerText = p.initial === 0 ? '平民陣營 🧑‍🌾' : '狼人陣營 🐺';
             document.getElementById('mCurrent').innerText = p.currentRole;
             
@@ -425,6 +428,8 @@
             }
             p.isUpgraded = true;
             db.update({ players: players });
+            // 更新視窗內顯示
+            document.getElementById('mCurrent').innerText = p.currentRole;
             alert(`升級成功！${p.name} 變為：【${p.currentRole}】`);
             closeModal();
         }
