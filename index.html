@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tr. Winnie's 單字狼人殺系統 V4.3</title>
+    <title>Tr. Winnie's 單字狼人殺系統 V4.4</title>
     <style>
         :root {
             --bg-dark: #0f111a;
@@ -29,7 +29,7 @@
 
         .view-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 950px;
             background-color: var(--panel-bg);
             border-radius: 12px;
             padding: 20px;
@@ -39,94 +39,91 @@
         }
 
         h2, h3 { margin-top: 0; color: var(--gold); text-align: center; }
-        .mode-select { display: flex; gap: 15px; margin: 20px 0; justify-content: center; }
-        .mode-btn { padding: 15px 30px; font-size: 18px; background: #222533; border: 2px solid #444; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; }
-        .mode-btn.active { border-color: var(--gold); background: #2c3045; box-shadow: 0 0 10px rgba(241,196,15,0.3); }
+        
+        /* 模式選擇與按鈕優化 */
+        .mode-select { display: flex; gap: 15px; margin: 20px 0; justify-content: center; width: 100%; max-width: 500px; }
+        .mode-btn { flex: 1; padding: 18px 20px; font-size: 18px; background: #222533; border: 2px solid #444; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; white-space: nowrap; }
+        .mode-btn:hover { border-color: var(--gold); }
 
         textarea {
-            width: 100%; height: 70px; background: #222533; border: 1px solid #444;
-            color: white; padding: 8px; border-radius: 6px; box-sizing: border-box; resize: none;
+            width: 100%; height: 80px; background: #222533; border: 1px solid #444;
+            color: white; padding: 10px; border-radius: 6px; box-sizing: border-box; resize: none; font-size: 16px;
         }
         .setup-row { display: flex; gap: 10px; margin: 15px 0; align-items: center; justify-content: space-between; }
-        input[type="number"] { width: 60px; background: #222533; border: 1px solid #444; color: white; padding: 5px; text-align: center; border-radius: 4px; }
+        input[type="number"] { width: 70px; background: #222533; border: 1px solid #444; color: white; padding: 8px; text-align: center; border-radius: 4px; font-size: 16px; }
         
-        button {
-            background-color: var(--accent-red); color: white; border: none; padding: 12px;
-            border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; font-size: 16px;
+        /* 手機控制台流程按鈕：強制不換行 */
+        .flow-btn-group { display: flex; gap: 10px; justify-content: space-between; width: 100%; }
+        .flow-btn-group button { 
+            flex: 1; 
+            white-space: nowrap; /* 強制文字不換行 */
+            padding: 14px 5px; 
+            font-size: 15px; 
+            border-radius: 6px; 
+            border: none; 
+            color: white; 
+            font-weight: bold; 
+            cursor: pointer;
         }
-        button:hover { opacity: 0.9; }
 
-        .hidden { display: none !important; }
-
-        /* 手機端玩家列表 */
-        .player-list-phone { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        /* 手機端玩家列表加大 */
+        .player-list-phone { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
         .player-row-phone {
-            background: #222533; padding: 14px; border-radius: 8px;
+            background: #222533; padding: 16px 14px; border-radius: 8px;
             display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-            border-left: 5px solid #444;
+            border-left: 6px solid #444; font-size: 17px;
         }
         .player-row-phone.alive { border-left-color: var(--accent-green); }
         .player-row-phone.dead { border-left-color: var(--accent-red); background: #1a1215; }
-        .status-badge { font-size: 12px; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        .status-badge { font-size: 13px; padding: 4px 10px; border-radius: 4px; font-weight: bold; }
         .status-alive { background: rgba(46, 204, 113, 0.2); color: var(--accent-green); }
         .status-dead { background: rgba(233, 69, 96, 0.2); color: var(--accent-red); }
 
         /* 防偷看全黑遮罩與彈窗 */
-        .modal-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #0f111a; 
-            z-index: 99; 
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f111a; z-index: 99; }
         .modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 95%; max-width: 440px; background: #1a1c28; border: 3px solid var(--gold);
             border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             box-sizing: border-box; z-index: 100;
         }
+        .modal button { width: 100%; padding: 14px; border-radius: 6px; border: none; font-weight: bold; font-size: 16px; cursor: pointer; }
 
-        /* 大螢幕端佈局 */
+        /* 大螢幕端樣式優化 */
         .screen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; width: 100%; }
-        .screen-card {
-            background: #1f212d; border: 2px solid #333; border-radius: 8px;
-            padding: 20px; text-align: center; position: relative;
-        }
+        .screen-card { background: #1f212d; border: 2px solid #333; border-radius: 8px; padding: 20px; text-align: center; position: relative; }
         .screen-card.dead { background: #2d181c; border-color: var(--accent-red); opacity: 0.4; }
-        .screen-card.dead::after {
-            content: "復活區"; position: absolute; bottom: 5px; right: 5px;
-            font-size: 11px; background: var(--accent-red); color: white; padding: 2px 5px; border-radius: 3px;
-        }
+        .screen-card.dead::after { content: "復活區"; position: absolute; bottom: 5px; right: 5px; font-size: 11px; background: var(--accent-red); color: white; padding: 2px 5px; border-radius: 3px; }
         .p-num { font-size: 28px; font-weight: bold; color: var(--gold); margin-bottom: 5px; }
         .p-name { font-size: 18px; font-weight: bold; }
 
-        .flow-display { font-size: 32px; font-weight: bold; color: #54a0ff; margin: 15px 0; text-shadow: 0 0 10px rgba(84,160,255,0.4); text-align: center; }
+        .flow-display { font-size: 32px; font-weight: bold; color: #54a0ff; margin: 15px 0; text-shadow: 0 0 10px rgba(84,160,255,0.4); text-align: center; white-space: nowrap; }
+
+        /* 新增：大螢幕陣營人數統計欄 */
+        .team-counter-bar {
+            display: flex; justify-content: center; gap: 20px; background: rgba(255, 255, 255, 0.05);
+            padding: 12px; border-radius: 8px; border: 1px solid #333; margin: 15px 0; font-size: 18px; font-weight: bold;
+        }
+        .counter-item { display: flex; align-items: center; gap: 8px; }
 
         /* 主持詞與死亡公告 */
-        .script-box {
-            background: #111424; border: 1px dashed var(--gold); padding: 15px;
-            border-radius: 8px; margin-top: 20px; color: #ccc; font-size: 15px; line-height: 1.8;
-        }
+        .script-box { background: #111424; border: 1px dashed var(--gold); padding: 15px; border-radius: 8px; margin-top: 20px; color: #ccc; font-size: 15px; line-height: 1.8; width: 100%; box-sizing: border-box; }
         .script-box strong { color: var(--gold); }
         .script-box em { color: #ff7675; font-style: normal; font-size: 13px; }
 
-        .death-announcement {
-            background: rgba(233, 69, 96, 0.15); border: 2px solid var(--accent-red);
-            color: #ff7675; padding: 15px; border-radius: 8px; text-align: center;
-            font-size: 24px; font-weight: bold; margin: 15px 0;
-            animation: blink 2s infinite;
-        }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .death-announcement { background: rgba(233, 69, 96, 0.15); border: 2px solid var(--accent-red); color: #ff7675; padding: 15px; border-radius: 8px; text-align: center; font-size: 24px; font-weight: bold; margin: 15px 0; width: 100%; box-sizing: border-box; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <h1 style="color:var(--gold); margin-bottom:5px;">🐺 Tr. Winnie's 單字狼人殺系統 V4.3 🐺</h1>
+    <h1 style="color:var(--gold); margin-bottom:5px;">🐺 Tr. Winnie's 單字狼人殺系統 V4.4 🐺</h1>
     
     <div class="mode-select" id="modeSelector">
         <button class="mode-btn" onclick="selectMode('phone')">📱 我是手機 (控制端)</button>
         <button class="mode-btn" onclick="selectMode('screen')">🖥️ 我是電腦 (大螢幕)</button>
     </div>
 
-    <!-- =============== 1. 老師手機控制端 =============== -->
     <div id="phoneView" class="view-container hidden">
         <h2>📱 老師掌上控制台</h2>
         <p style="font-size:12px; color:#aaa; text-align:center;">此畫面請留在手機，勿給學生看到完整名單狀態</p>
@@ -137,13 +134,13 @@
                 <label>狼人總數：</label>
                 <input type="number" id="wolfNum" value="2" min="1">
             </div>
-            <button onclick="startGame()">⚔️ 初始化並排定編號</button>
+            <button style="background-color: var(--accent-red); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px;" onclick="startGame()">⚔️ 初始化並排定編號</button>
         </div>
 
         <div id="controlArea" class="hidden">
-            <div style="background:#222533; padding:10px; border-radius:8px; margin-bottom:15px;">
-                <span style="font-size:12px; color:#aaa; display:block; text-align:center; margin-bottom:5px;">切換大螢幕流程狀態</span>
-                <div style="display:flex; gap:8px;">
+            <div style="background:#222533; padding:12px; border-radius:8px; margin-bottom:15px;">
+                <span style="font-size:12px; color:#aaa; display:block; text-align:center; margin-bottom:8px;">切換大螢幕流程狀態</span>
+                <div class="flow-btn-group">
                     <button style="background:#54a0ff;" onclick="sendFlow('day')">☀️ 天亮了</button>
                     <button style="background:#57606f;" onclick="sendFlow('night')">🌙 天黑了</button>
                     <button style="background:#ff6b6b;" onclick="sendFlow('vote')">🗳️ 投票時間</button>
@@ -151,19 +148,22 @@
             </div>
             <h4 style="margin:5px 0; color:#aaa;">點擊學生改卷、升級、出局或復活：</h4>
             <div id="playerListPhone" class="player-list-phone"></div>
-            <button style="background:#333; margin-top:20px; font-size:12px;" onclick="resetGameData()">重置整局遊戲</button>
+            <button style="background:#333; margin-top:25px; font-size:13px; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; width: 100%;" onclick="resetGameData()">重置整局遊戲</button>
         </div>
     </div>
 
-    <!-- =============== 2. 教室大螢幕端 =============== -->
     <div id="screenView" class="view-container hidden" style="max-width:1000px; background:#0b0c10; border-color:var(--gold);">
         <h2>🖥️ 戰況即時看板</h2>
         <div id="screenFlow" class="flow-display">等待老師初始化遊戲...</div>
         
+        <div id="teamCounterBar" class="team-counter-bar hidden">
+            <div class="counter-item" style="color: #54a0ff;">🧑‍🌾 平民陣營存活: <span id="goodAliveCount" style="color: var(--gold);">0</span> 人</div>
+            <div class="counter-item" style="color: var(--accent-red);">🐺 狼人陣營存活: <span id="badAliveCount" style="color: var(--gold);">0</span> 人</div>
+        </div>
+        
         <div id="deathBox" class="death-announcement hidden"></div>
         <div class="screen-grid" id="screenGrid"></div>
 
-        <!-- 專屬法官提示詞區 -->
         <div id="scriptBox" class="script-box hidden">
             <h3 style="color:var(--accent-red); text-align:left; font-size:16px; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">🔮 Tr. Winnie 的大螢幕私密主持詞 (台下閉眼中，大方看著唸吧！)</h3>
             <p>1. <strong>「天黑請閉眼，所有人請趴下。」</strong> <br><em>(Eyes closed, everyone. Night falls.)</em></p>
@@ -174,7 +174,6 @@
         </div>
     </div>
 
-    <!-- 老師秘密改卷視窗 (預言預設加上 hidden 類別以免暴走) -->
     <div id="modalOverlay" class="modal-overlay hidden" onclick="closeModal()"></div>
     <div id="secretModal" class="modal hidden">
         <h3 id="modalTitle">學生檔案</h3>
@@ -184,10 +183,9 @@
             <div id="mSkill" style="font-size:14px; color:#aaa; margin-top:8px; border-top:1px dashed #444; padding-top:8px;"></div>
         </div>
         <div id="actionButtons" style="display:flex; flex-direction:column; gap:10px;"></div>
-        <button style="background:#57606f; margin-top:10px;" onclick="closeModal()">看完關閉檔案 (保護身分)</button>
+        <button style="background:#57606f; margin-top:10px; color: white;" onclick="closeModal()">看完關閉檔案 (保護身分)</button>
     </div>
 
-    <!-- 載入 Firebase 套件 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -226,6 +224,7 @@
                     document.getElementById('screenFlow').innerText = "等待老師初始化遊戲...";
                     document.getElementById('deathBox').classList.add('hidden');
                     document.getElementById('scriptBox').classList.add('hidden');
+                    document.getElementById('teamCounterBar').classList.add('hidden');
                     return;
                 }
 
@@ -235,6 +234,21 @@
                 if (currentMode === 'screen') {
                     const scriptBox = document.getElementById('scriptBox');
                     const deathBox = document.getElementById('deathBox');
+                    const counterBar = document.getElementById('teamCounterBar');
+
+                    counterBar.classList.remove('hidden');
+                    
+                    // 計算兩大陣營活著的人數
+                    let goodAlive = 0;
+                    let badAlive = 0;
+                    players.forEach(p => {
+                        if (p.isAlive) {
+                            if (p.initial === 0) goodAlive++;
+                            else badAlive++;
+                        }
+                    });
+                    document.getElementById('goodAliveCount').innerText = goodAlive;
+                    document.getElementById('badAliveCount').innerText = badAlive;
 
                     if (flowState === 'day') {
                         document.getElementById('screenFlow').innerText = "☀️ 天亮了！請進行單字小考與改卷 📝";
@@ -399,12 +413,14 @@
 
                 const killBtn = document.createElement('button');
                 killBtn.style.background = 'var(--accent-red)';
+                killBtn.style.color = 'white';
                 killBtn.innerText = '💀 宣布此人出局 (投死/毒死/殺死)';
                 killBtn.onclick = () => changeStatus(false);
                 btnArea.appendChild(killBtn);
             } else {
                 const reviveBtn = document.createElement('button');
                 reviveBtn.style.background = 'var(--accent-green)';
+                reviveBtn.style.color = 'white';
                 reviveBtn.innerText = '❤️ 單字全對 ➜ 成功復活！(回復原始陣營)';
                 reviveBtn.onclick = triggerRevive;
                 btnArea.appendChild(reviveBtn);
