@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tr. Winnie's 單字狼人殺系統 V4.1 - 防偷看完美主持版</title>
+    <title>Tr. Winnie's 單字狼人殺系統 V4.2</title>
     <style>
         :root {
             --bg-dark: #0f111a;
@@ -56,7 +56,7 @@
         }
         button:hover { opacity: 0.9; }
 
-        /* 玩家列表 */
+        /* 手機端玩家列表 */
         .player-list-phone { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
         .player-row-phone {
             background: #222533; padding: 14px; border-radius: 8px;
@@ -69,10 +69,10 @@
         .status-alive { background: rgba(46, 204, 113, 0.2); color: var(--accent-green); }
         .status-dead { background: rgba(233, 69, 96, 0.2); color: var(--accent-red); }
 
-        /* ================= 🛑 關鍵修正：防偷看隱密彈開面板 🛑 ================= */
+        /* 🛑 絕對防偷看全黑遮罩與彈窗 */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #0f111a; /* 1. 改為完全不透明的底色，直接遮死後面所有名單 */
+            background: #0f111a; 
             z-index: 99; 
         }
         .modal {
@@ -81,9 +81,8 @@
             border-radius: 12px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             box-sizing: border-box; z-index: 100;
         }
-        /* ================================================================= */
 
-        /* 大螢幕端樣式 */
+        /* 大螢幕端佈局 */
         .screen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; width: 100%; }
         .screen-card {
             background: #1f212d; border: 2px solid #333; border-radius: 8px;
@@ -99,7 +98,7 @@
 
         .flow-display { font-size: 32px; font-weight: bold; color: #54a0ff; margin: 15px 0; text-shadow: 0 0 10px rgba(84,160,255,0.4); text-align: center; }
 
-        /* 天黑主持詞區 */
+        /* 主持詞與死亡公告 */
         .script-box {
             background: #111424; border: 1px dashed var(--gold); padding: 15px;
             border-radius: 8px; margin-top: 20px; color: #ccc; font-size: 15px; line-height: 1.8;
@@ -107,7 +106,6 @@
         .script-box strong { color: var(--gold); }
         .script-box em { color: #ff7675; font-style: normal; font-size: 13px; }
 
-        /* 死亡公告樣式 */
         .death-announcement {
             background: rgba(233, 69, 96, 0.15); border: 2px solid var(--accent-red);
             color: #ff7675; padding: 15px; border-radius: 8px; text-align: center;
@@ -119,17 +117,17 @@
 </head>
 <body>
 
-    <h1 style="color:var(--gold); margin-bottom:5px;">🐺 Tr. Winnie's 單字狼人殺 V4.1 🐺</h1>
+    <h1 style="color:var(--gold); margin-bottom:5px;">🐺 Tr. Winnie's 單字狼人殺 V4.2 🐺</h1>
     
     <div class="mode-select" id="modeSelector">
         <button class="mode-btn" onclick="selectMode('phone')">📱 我是手機 (控制端)</button>
         <button class="mode-btn" onclick="selectMode('screen')">🖥️ 我是電腦 (大螢幕)</button>
     </div>
 
-    <!-- =============== 1. 老師手機端介面 =============== -->
+    <!-- =============== 1. 老師手機控制端 =============== -->
     <div id="phoneView" class="view-container hidden">
         <h2>📱 老師掌上控制台</h2>
-        <p style="font-size:12px; color:#aaa; text-align:center;">此畫面請留在手機，勿給學生看到身分</p>
+        <p style="font-size:12px; color:#aaa; text-align:center;">此畫面請留在手機，勿給學生看到完整名單狀態</p>
         
         <div id="setupArea">
             <textarea id="namesInput" placeholder="輸入學生名字，可用逗號或換行隔開...&#10;例如：Tiffany, Andrea, Katrina, Kelly"></textarea>
@@ -155,17 +153,15 @@
         </div>
     </div>
 
-    <!-- =============== 2. 教室大螢幕端介面 =============== -->
+    <!-- =============== 2. 教室大螢幕端 =============== -->
     <div id="screenView" class="view-container hidden" style="max-width:1000px; background:#0b0c10; border-color:var(--gold);">
         <h2>🖥️ 戰況即時看板</h2>
         <div id="screenFlow" class="flow-display">等待老師初始化遊戲...</div>
         
-        <!-- 昨晚死亡公告欄 -->
         <div id="deathBox" class="death-announcement hidden"></div>
-
         <div class="screen-grid" id="screenGrid"></div>
 
-        <!-- 專屬老師法官秘密主持詞提示區 (天黑自動出現) -->
+        <!-- 專屬法官提示詞區 -->
         <div id="scriptBox" class="script-box hidden">
             <h3 style="color:var(--accent-red); text-align:left; font-size:16px; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">🔮 Tr. Winnie 的大螢幕私密主持詞 (台下閉眼中，大方看著唸吧！)</h3>
             <p>1. <strong>「天黑請閉眼，所有人請趴下。」</strong> <br><em>(Eyes closed, everyone. Night falls.)</em></p>
@@ -176,7 +172,7 @@
         </div>
     </div>
 
-    <!-- 老師改卷隱密彈窗 (內建 100% 遮蔽底色) -->
+    <!-- 老師秘密改卷視窗 (全黑保密) -->
     <div id="modalOverlay" class="modal-overlay hidden" onclick="closeModal()"></div>
     <div id="secretModal" class="modal hidden">
         <h3 id="modalTitle">學生檔案</h3>
@@ -189,11 +185,12 @@
         <button style="background:#57606f; margin-top:10px;" onclick="closeModal()">看完關閉檔案 (保護身分)</button>
     </div>
 
-    <!-- 載入 Firebase 核心套件 -->
+    <!-- 載入 Firebase 套件 -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
+        // 內建 Winnie 專屬 Firebase 設定
         const firebaseConfig = {
             databaseURL: "https://haowork-12-default-rtdb.firebaseio.com/"
         };
@@ -201,7 +198,6 @@
         const db = firebase.database().ref("winnie_room");
 
         let players = [];
-        let previousAliveStates = [];
         let currentEditingIndex = null;
         let currentMode = '';
 
@@ -211,7 +207,6 @@
         function selectMode(mode) {
             currentMode = mode;
             document.getElementById('modeSelector').classList.add('hidden');
-            
             if (mode === 'phone') {
                 document.getElementById('phoneView').classList.remove('hidden');
             } else {
@@ -225,7 +220,6 @@
                 const data = snapshot.val();
                 if (!data) {
                     players = [];
-                    previousAliveStates = [];
                     showSetupOrControl(false);
                     renderScreen([]);
                     document.getElementById('screenFlow').innerText = "等待老師初始化遊戲...";
@@ -428,7 +422,6 @@
             }
             p.isUpgraded = true;
             db.update({ players: players });
-            // 更新視窗內顯示
             document.getElementById('mCurrent').innerText = p.currentRole;
             alert(`升級成功！${p.name} 變為：【${p.currentRole}】`);
             closeModal();
