@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tr. Winnie's 單字狼人殺系統 V4.2</title>
+    <title>Tr. Winnie's 單字狼人殺系統 V4.3</title>
     <style>
         :root {
             --bg-dark: #0f111a;
@@ -56,6 +56,8 @@
         }
         button:hover { opacity: 0.9; }
 
+        .hidden { display: none !important; }
+
         /* 手機端玩家列表 */
         .player-list-phone { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
         .player-row-phone {
@@ -69,7 +71,7 @@
         .status-alive { background: rgba(46, 204, 113, 0.2); color: var(--accent-green); }
         .status-dead { background: rgba(233, 69, 96, 0.2); color: var(--accent-red); }
 
-        /* 🛑 絕對防偷看全黑遮罩與彈窗 */
+        /* 防偷看全黑遮罩與彈窗 */
         .modal-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #0f111a; 
@@ -117,7 +119,7 @@
 </head>
 <body>
 
-    <h1 style="color:var(--gold); margin-bottom:5px;">🐺 Tr. Winnie's 單字狼人殺 V4.2 🐺</h1>
+    <h1 style="color:var(--gold); margin-bottom:5px;">🐺 Tr. Winnie's 單字狼人殺系統 V4.3 🐺</h1>
     
     <div class="mode-select" id="modeSelector">
         <button class="mode-btn" onclick="selectMode('phone')">📱 我是手機 (控制端)</button>
@@ -172,7 +174,7 @@
         </div>
     </div>
 
-    <!-- 老師秘密改卷視窗 (全黑保密) -->
+    <!-- 老師秘密改卷視窗 (預言預設加上 hidden 類別以免暴走) -->
     <div id="modalOverlay" class="modal-overlay hidden" onclick="closeModal()"></div>
     <div id="secretModal" class="modal hidden">
         <h3 id="modalTitle">學生檔案</h3>
@@ -190,7 +192,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // 內建 Winnie 專屬 Firebase 設定
         const firebaseConfig = {
             databaseURL: "https://haowork-12-default-rtdb.firebaseio.com/"
         };
