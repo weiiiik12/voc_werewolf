@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tr. Winnie's 單字狼人殺系統 V3 - 連線版</title>
+    <title>Tr. Winnie's 單字狼人殺系統 V4 - 完美主持版</title>
     <style>
         :root {
             --bg-dark: #0f111a;
@@ -85,7 +85,7 @@
             background: #1f212d; border: 2px solid #333; border-radius: 8px;
             padding: 20px; text-align: center; position: relative;
         }
-        .screen-card.dead { background: #2d181c; border-color: var(--accent-red); opacity: 0.5; }
+        .screen-card.dead { background: #2d181c; border-color: var(--accent-red); opacity: 0.4; }
         .screen-card.dead::after {
             content: "復活區"; position: absolute; bottom: 5px; right: 5px;
             font-size: 11px; background: var(--accent-red); color: white; padding: 2px 5px; border-radius: 3px;
@@ -94,13 +94,29 @@
         .p-name { font-size: 18px; font-weight: bold; }
 
         .flow-display { font-size: 32px; font-weight: bold; color: #54a0ff; margin: 15px 0; text-shadow: 0 0 10px rgba(84,160,255,0.4); text-align: center; }
+
+        /* 天黑主持詞區 */
+        .script-box {
+            background: #111424; border: 1px dashed var(--gold); padding: 15px;
+            border-radius: 8px; margin-top: 20px; color: #ccc; font-size: 15px; line-height: 1.8;
+        }
+        .script-box strong { color: var(--gold); }
+        .script-box em { color: #ff7675; font-style: normal; font-size: 13px; }
+
+        /* 死亡公告樣式 */
+        .death-announcement {
+            background: rgba(233, 69, 96, 0.15); border: 2px solid var(--accent-red);
+            color: #ff7675; padding: 15px; border-radius: 8px; text-align: center;
+            font-size: 24px; font-weight: bold; margin: 15px 0;
+            animation: blink 2s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
     </style>
 </head>
 <body>
 
-    <h1 style="color:var(--gold); margin-bottom:5px;">🐺 Tr. Winnie's 單字狼人殺 V3 🐺</h1>
+    <h1 style="color:var(--gold); margin-bottom:5px;">🐺 Tr. Winnie's 單字狼人殺 V4 🐺</h1>
     
-    <!-- 選擇這台裝置是手機還是電腦大螢幕 -->
     <div class="mode-select" id="modeSelector">
         <button class="mode-btn" onclick="selectMode('phone')">📱 我是手機 (控制端)</button>
         <button class="mode-btn" onclick="selectMode('screen')">🖥️ 我是電腦 (大螢幕)</button>
@@ -124,9 +140,9 @@
             <div style="background:#222533; padding:10px; border-radius:8px; margin-bottom:15px;">
                 <span style="font-size:12px; color:#aaa; display:block; text-align:center; margin-bottom:5px;">切換大螢幕流程狀態</span>
                 <div style="display:flex; gap:8px;">
-                    <button style="background:#54a0ff;" onclick="sendFlow('☀️ 天亮了！請進行單字小考與改卷 📝')">☀️ 天亮</button>
-                    <button style="background:#57606f;" onclick="sendFlow('🌙 天黑請閉眼，身分發動技能中...')">🌙 天黑</button>
-                    <button style="background:#ff6b6b;" onclick="sendFlow('🗳️ 投票時間！請指牌處決嫌疑人！')">🗳️ 投票</button>
+                    <button style="background:#54a0ff;" onclick="sendFlow('day')">☀️ 天亮了</button>
+                    <button style="background:#57606f;" onclick="sendFlow('night')">🌙 天黑了</button>
+                    <button style="background:#ff6b6b;" onclick="sendFlow('vote')">🗳️ 投票時間</button>
                 </div>
             </div>
             <h4 style="margin:5px 0; color:#aaa;">點擊學生改卷、升級、出局或復活：</h4>
@@ -139,7 +155,21 @@
     <div id="screenView" class="view-container hidden" style="max-width:1000px; background:#0b0c10; border-color:var(--gold);">
         <h2>🖥️ 戰況即時看板</h2>
         <div id="screenFlow" class="flow-display">等待老師初始化遊戲...</div>
+        
+        <!-- 昨晚死亡公告欄 -->
+        <div id="deathBox" class="death-announcement hidden"></div>
+
         <div class="screen-grid" id="screenGrid"></div>
+
+        <!-- 專屬老師法官秘密主持詞提示區 (天黑自動出現) -->
+        <div id="scriptBox" class="script-box hidden">
+            <h3 style="color:var(--accent-red); text-align:left; font-size:16px; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">🔮 Tr. Winnie 的大螢幕私密主持詞 (台下閉眼中，大方看著唸吧！)</h3>
+            <p>1. <strong>「天黑請閉眼，所有人請趴下。」</strong> <br><em>(Eyes closed, everyone. Night falls.)</em></p>
+            <p>2. <strong>「狼人請睜眼，互相確認隊友。拿到 100 分考卷的狼人請看向老師，老師偷偷比手勢告訴你進化角色（白狼王/狼美人）。好，狼人請指定今晚要殺的人（請比號碼）。」</strong> <br><em>(Werewolves, open your eyes. Choose your victim.)</em></p>
+            <p>3. <strong>「狼人請閉眼。」</strong> <br><em>(Werewolves, close your eyes.)</em></p>
+            <p>4. <strong>「預言家請睜眼。請比號碼查驗身分，大拇指朝上是好人，朝下是壞人。預言家請閉眼。」</strong> <br><em>(Seer, open your eyes. Check one person. Seer, close your eyes.)</em></p>
+            <p>5. <strong>「女巫請睜眼。昨晚死的是他（比號碼），你要用解藥嗎？你要用毒藥毒誰嗎（比號碼）？女巫請閉眼。」</strong> <br><em>(Witch, open your eyes. Use your potion? Witch, close your eyes.)</em></p>
+        </div>
     </div>
 
     <!-- 老師改卷隱密彈窗 -->
@@ -160,7 +190,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // 💡 請把這裡的 databaseURL 換成你剛剛複製的那串網址
+        // 💡 這裡已經幫你換成你專屬的 Firebase 即時連線網址囉！
         const firebaseConfig = {
             databaseURL: "https://haowork-12-default-rtdb.firebaseio.com/"
         };
@@ -168,6 +198,7 @@
         const db = firebase.database().ref("winnie_room");
 
         let players = [];
+        let previousAliveStates = [];
         let currentEditingIndex = null;
         let currentMode = '';
 
@@ -183,7 +214,6 @@
             } else {
                 document.getElementById('screenView').classList.remove('hidden');
             }
-            // 開始接聽資料庫同步訊號
             startListening();
         }
 
@@ -192,14 +222,56 @@
                 const data = snapshot.val();
                 if (!data) {
                     players = [];
+                    previousAliveStates = [];
                     showSetupOrControl(false);
                     renderScreen([]);
                     document.getElementById('screenFlow').innerText = "等待老師初始化遊戲...";
+                    document.getElementById('deathBox').classList.add('hidden');
+                    document.getElementById('scriptBox').classList.add('hidden');
                     return;
                 }
 
                 players = data.players || [];
-                document.getElementById('screenFlow').innerText = data.currentFlow || "遊戲進行中";
+                const flowState = data.currentFlowState || 'day';
+
+                if (currentMode === 'screen') {
+                    const scriptBox = document.getElementById('scriptBox');
+                    const deathBox = document.getElementById('deathBox');
+
+                    if (flowState === 'day') {
+                        document.getElementById('screenFlow').innerText = "☀️ 天亮了！請進行單字小考與改卷 📝";
+                        scriptBox.classList.add('hidden');
+                        
+                        let killedList = [];
+                        if (data.prevAlive) {
+                            data.prevAlive.forEach((wasAlive, idx) => {
+                                if (wasAlive && players[idx] && !players[idx].isAlive) {
+                                    killedList.push(`${players[idx].id}號 ${players[idx].name}`);
+                                }
+                            });
+                        }
+
+                        if (killedList.length > 0) {
+                            deathBox.innerText = `💀 昨晚不幸出局（進入復活區）： ${killedList.join('、 ')}`;
+                            deathBox.classList.remove('hidden');
+                        } else if (data.prevAlive) {
+                            deathBox.innerHTML = `🕊️ 昨晚是個平安夜！沒有人出局。`;
+                            deathBox.classList.remove('hidden');
+                        } else {
+                            deathBox.classList.add('hidden');
+                        }
+
+                    } else if (flowState === 'night') {
+                        document.getElementById('screenFlow').innerText = "🌙 天黑請閉眼，身分發動技能中...";
+                        scriptBox.classList.remove('hidden');
+                        deathBox.classList.add('hidden');
+                    } else if (flowState === 'vote') {
+                        document.getElementById('screenFlow').innerText = "🗳️ 投票時間！請指牌處決嫌疑人！";
+                        scriptBox.classList.add('hidden');
+                        deathBox.classList.add('hidden');
+                    }
+                    renderScreen(players);
+                }
 
                 if (currentMode === 'phone') {
                     if (players.length > 0) {
@@ -208,8 +280,6 @@
                     } else {
                         showSetupOrControl(false);
                     }
-                } else if (currentMode === 'screen') {
-                    renderScreen(players);
                 }
             });
         }
@@ -251,15 +321,23 @@
                 }
             }
 
-            // 推送到雲端資料庫
             db.set({
                 players: localPlayers,
-                currentFlow: '☀️ 天亮了！請進行第1輪單字小考 📝'
+                currentFlowState: 'day',
+                prevAlive: null
             });
         }
 
-        function sendFlow(text) {
-            db.update({ currentFlow: text });
+        function sendFlow(state) {
+            if (state === 'night') {
+                let currentAlive = players.map(p => p.isAlive);
+                db.update({ 
+                    currentFlowState: state,
+                    prevAlive: currentAlive
+                });
+            } else {
+                db.update({ currentFlowState: state });
+            }
         }
 
         function renderPhoneList() {
@@ -295,7 +373,7 @@
             currentEditingIndex = idx;
             const p = players[idx];
             
-            document.getElementById('modalTitle').innerText = `${p.id}號 【${p.name}】 的身分檔案`;
+            document.getElementById('modalTitle').innerText = `${p.id}號 【${p.name}】`;
             document.getElementById('mInitial').innerText = p.initial === 0 ? '平民陣營 🧑‍🌾' : '狼人陣營 🐺';
             document.getElementById('mCurrent').innerText = p.currentRole;
             
@@ -357,7 +435,7 @@
             p.isUpgraded = false;
             p.currentRole = p.initial === 0 ? '平民' : '狼人';
             db.update({ players: players });
-            alert(`❤️ 復活成功！${p.name} 已洗回原始身分：【${p.currentRole}】`);
+            alert(`❤️ 復活成功！${p.name} 已回復原始身分：【${p.currentRole}】`);
             closeModal();
         }
 
